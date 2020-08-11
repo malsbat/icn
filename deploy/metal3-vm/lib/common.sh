@@ -126,3 +126,7 @@ function list_nodes {
            .user + " " + .password + " " + .mac' \
        | sed 's/"//g'
 }
+
+function list_add_unique {
+    echo -n "$*" | tr ' ' ',' | awk -v RS=, '!seen[$0]++{print $0}' | paste -s -d,
+}

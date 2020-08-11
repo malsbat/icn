@@ -181,9 +181,19 @@ else
   POD_NAME=""
 fi
 
+# add hosts to no_proxy if needed
+if jq -e '.proxies.default.noProxy' ~/.docker/config.json > /dev/null; then
+    provisioning_hosts=$(nmap -nsL "172.22.0.0/24" | awk '/Nmap scan report/{print $NF}' | sed -n "2p;11,$((10+$NUM_MASTERS+$NUM_WORKERS))p;$((11+$NUM_MASTERS+$NUM_WORKERS))q" | paste -s -d,)
+    baremetal_hosts=$(nmap -nsL "$EXTERNAL_SUBNET" | awk '/Nmap scan report/{print $NF}' | sed -n "2p;21,$((20+$NUM_MASTERS+$NUM_WORKERS))p;$((21+$NUM_MASTERS+$NUM_WORKERS))q" | paste -s -d,)
+    noProxy=$(jq -r '.proxies.default.noProxy' ~/.docker/config.json)
+    config=$(mktemp)
+    jq --arg hosts $(list_add_unique $provisioning_hosts $baremetal_hosts $noProxy) '(.proxies.default.noProxy |= $hosts)' ~/.docker/config.json > $config
+    mv $config ~/.docker/config.json
+fi
+
 cat <<EOF > ${PWD}/ironic.env                                                 
 PROVISIONING_INTERFACE=provisioning                                               
-DHCP_RANGE=172.22.0.10,172.22.0.100                                               
+DHCP_RANGE=172.22.0.10,172.22.0.$((10+$NUM_MASTERS+$NUM_WORKERS))
 DEPLOY_KERNEL_URL=http://172.22.0.1/images/ironic-python-agent.kernel             
 DEPLOY_RAMDISK_URL=http://172.22.0.1/images/ironic-python-agent.initramfs         
 IRONIC_ENDPOINT=http://172.22.0.1:6385/v1/                                        
