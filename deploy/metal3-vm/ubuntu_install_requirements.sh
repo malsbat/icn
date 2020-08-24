@@ -51,7 +51,7 @@ sudo apt -y install \
 
 if [[  $(cat ~/.bashrc) != *PYENV_ROOT* ]]; then
   if ! [ -d "$HOME/.pyenv" ] ; then
-     git clone git://github.com/yyuu/pyenv.git ~/.pyenv
+     git clone https://github.com/yyuu/pyenv.git ~/.pyenv
   fi
   # shellcheck disable=SC2016
   # shellcheck disable=SC2129
