@@ -15,14 +15,13 @@ end
 
 Vagrant.configure("2") do |config|
   config.vm.box = "generic/ubuntu1804"
-  config.vm.hostname = "ubuntu18"
+  config.vm.hostname = "icn"
 
   config.vm.provider :libvirt do |libvirt|
     libvirt.graphics_ip = '0.0.0.0'
-    # add random suffix to allow running multiple jobs
-    libvirt.random_hostname = 'yes'
     libvirt.cpu_mode = 'host-model'
     libvirt.cpus = 32
+    libvirt.cpuset = '0-21,44-65'
     libvirt.nested = true
     libvirt.memory = 40960
     libvirt.machine_virtual_size = 400
@@ -55,5 +54,17 @@ Vagrant.configure("2") do |config|
     SHELL
 
     config.vm.provision "Adding hostname to no proxy", type: "shell", path: "add-hostname-to-no-proxy.sh", privileged: true
+
+    config.vm.provision "Building ICN", type: "shell", privileged: true, inline: <<-SHELL
+      cd /vagrant
+      make verifier
+    SHELL
   end
+end
+
+Vagrant.configure("2") do |config|
+  #
+  # Enable remote ssh access into the VM.
+  #
+  config.vm.network "forwarded_port", guest: 22, host: 2233
 end

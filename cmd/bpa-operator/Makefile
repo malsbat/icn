@@ -4,7 +4,7 @@ build:
 
 docker:
 	docker build --rm -t akraino.org/icn/bpa-operator:latest . -f build/Dockerfile
-	git clone https://github.com/onap/multicloud-k8s.git
+	git clone -b docker-proxy https://github.com/malsbat/multicloud-k8s.git
 	cd multicloud-k8s && \
 	docker build  --network=host --rm \
 		-t github.com/onap/multicloud-k8s:latest . -f kud/build/Dockerfile
@@ -12,7 +12,7 @@ docker:
 
 docker_bmh_e2e:
 	docker build --rm -t akraino.org/icn/bpa-operator:latest . -f build/Dockerfile
-	git clone https://github.com/onap/multicloud-k8s.git
+	git clone -b docker-proxy https://github.com/malsbat/multicloud-k8s.git
 	cd multicloud-k8s && \
         docker build  --network=host --rm \
 		--build-arg KUD_ENABLE_TESTS=true \
