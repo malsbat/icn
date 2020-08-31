@@ -57,8 +57,12 @@ done
 
 sleep 30
 
-#Get CLusterIP
+#Get ClusterIP
 IP=$(kubectl get services | grep bpa-api-service | awk '{print $3}')
+if [[ -n "${http_proxy+x}" || -n "${HTTP_PROXY+x}" || -n "${https_proxy+x}" || -n "${HTTPS_PROXY+x}" ]]; then
+    no_proxy=$(echo -n "$IP,$no_proxy" | awk -v RS=, '!seen[$0]++{print $0}' | paste -s -d,)
+    NO_PROXY=$(echo -n "$IP,$NO_PROXY" | awk -v RS=, '!seen[$0]++{print $0}' | paste -s -d,)
+fi
 
 call_api -i -F "metadata=</tmp/sample.json;type=application/json" -F \
 file=@/tmp/sample.json -X POST \
@@ -72,6 +76,11 @@ http://$IP:9015/v1/baremetalcluster/alpha/beta/container_images/qwerty123 \
 --header "Upload-Offset: 0" --header "Expect:" -i
 
 MINIO_IP=$(kubectl get services | grep minio-service | awk '{print $3}')
+if [[ -n "${http_proxy+x}" || -n "${HTTP_PROXY+x}" || -n "${https_proxy+x}" || -n "${HTTPS_PROXY+x}" ]]; then
+    no_proxy=$(echo -n "$MINIO_IP,$no_proxy" | awk -v RS=, '!seen[$0]++{print $0}' | paste -s -d,)
+    NO_PROXY=$(echo -n "$MINIO_IP,$NO_PROXY" | awk -v RS=, '!seen[$0]++{print $0}' | paste -s -d,)
+fi
+
 setup_mc $MINIO_IP
 obj_size=$(get_object_size container qwerty123)
 echo "Got obj size: $obj_size"
