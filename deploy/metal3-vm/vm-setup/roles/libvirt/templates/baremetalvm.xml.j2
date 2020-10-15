@@ -1,4 +1,4 @@
-<domain type='{{ libvirt_domain_type }}'>
+<domain type='{{ libvirt_domain_type }}' xmlns:qemu='http://libvirt.org/schemas/domain/qemu/1.0'>
   <name>{{ item.name }}</name>
   <memory unit='MiB'>{{ flavors[item.flavor].memory }}</memory>
   <vcpu>{{ flavors[item.flavor].vcpu }}</vcpu>
@@ -9,6 +9,7 @@
     <type arch='{{ libvirt_arch }}'>hvm</type>
     <boot dev='network'/>
     <bootmenu enable='no'/>
+    <loader type='rom'>/icn/seabios/out/bios.bin</loader>
   </os>
   <features>
     <acpi/>
@@ -21,6 +22,7 @@
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
   <devices>
+{% if item.flavor == 'worker' %}
     <disk type='volume' device='disk'>
       <driver name='qemu' type='qcow2' cache='unsafe'/>
       <source pool='{{ libvirt_volume_pool }}' volume='{{ item.name }}.qcow2'/>
@@ -28,6 +30,7 @@
     </disk>
 {% if libvirt_diskbus == 'scsi' %}
   <controller type='scsi' model='virtio-scsi' />
+{% endif %}
 {% endif %}
 {% for network in networks %}
     <interface type='bridge'>
@@ -53,4 +56,13 @@
     {{baremetal_vm_device_xml|default('')}}
 
   </devices>
+
+{% if item.flavor == 'master' %}
+  <qemu:commandline>
+    <qemu:arg value='-drive'/>
+    <qemu:arg value='file={{ libvirt_volume_path }}/{{ item.name }}.qcow2,format=qcow2,if=none,id=NVME1'/>
+    <qemu:arg value='-device'/>
+    <qemu:arg value='nvme,drive=NVME1,serial=nvme-1'/>
+  </qemu:commandline>
+{% endif %}
 </domain>

@@ -67,13 +67,18 @@
       with_items: "{{ vm_nodes }}"
 
     - name: Create vm vm storage
-      command: >
-        virsh vol-create-as '{{ libvirt_volume_pool }}'
-        '{{ item.item.name }}'.qcow2 '{{ flavors[item.item.flavor].disk }}'G
-        --format qcow2
+      block:
+        - name: Define volume
+          template:
+            src: volume.xml.j2
+            dest: "{{ working_dir }}/{{ item.item.name }}_volume.xml"
+          with_items: "{{ vm_vol_check.results }}"
+        - name: Create volume
+          command: >
+            virsh vol-create {{ libvirt_volume_pool }} {{ working_dir }}/{{ item.item.name }}_volume.xml
+          with_items: "{{ vm_vol_check.results }}"
       when:
         - item is failed
-      with_items: "{{ vm_vol_check.results }}"
 
     # Define (but do not start) the vm nodes.  These will be
     # booted later by ironic during the provisioning process.
