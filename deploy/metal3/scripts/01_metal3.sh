@@ -93,7 +93,7 @@ function create_userdata {
 }
 
 function launch_baremetal_operator {
-    docker pull integratedcloudnative/baremetal-operator:v1.0-icn
+    docker pull $IRONIC_BAREMETAL_IMAGE
     kubectl apply -f bmo/namespace/namespace.yaml
     kubectl apply -f bmo/rbac/service_account.yaml -n metal3
     kubectl apply -f bmo/rbac/role.yaml -n metal3
@@ -174,6 +174,8 @@ function make_bm_hosts {
         printf "\n  userData:" >> $name-bm-node.yaml
         printf "\n    name: ""%s" "$name""-user-data" >> $name-bm-node.yaml
         printf "\n    namespace: metal3\n" >> $name-bm-node.yaml
+        printf "\n  rootDeviceHints:" >> $name-bm-node.yaml
+        printf "\n    minSizeGigabytes: 48\n" >> $name-bm-node.yaml
         kubectl apply -f $name-bm-node.yaml -n metal3
     done
 }
