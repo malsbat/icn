@@ -14,9 +14,9 @@ function get_kud_repo {
     pushd $DOWNLOAD_PATH
     if [ "$1" == "v1" ] ; then
         export KUD_ADDONS=multus
-        git clone https://github.com/onap/multicloud-k8s.git
+        git clone https://github.com/malsbat/multicloud-k8s.git
     else
-        git clone https://github.com/onap/multicloud-k8s.git
+        git clone https://github.com/malsbat/multicloud-k8s.git
     fi
     popd
 }
